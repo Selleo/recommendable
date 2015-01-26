@@ -65,25 +65,25 @@ module Recommendable
           def method_missing(method, *args, &block)
             if method.to_s =~ /\A((?:dis)?liked|hidden|bookmarked)_(.+)_in_common_with\z/
               begin
-                send("#{$1}_in_common_with", $2.classify.constantize, *args)
+                send("#{$1}_in_common_with", $2.classify.constantize, *args, &block)
               rescue NameError
                 super
               end
             elsif method.to_s =~ /\A((?:dis)?liked|hidden|bookmarked)_(.+)_count\z/
               begin
-                send("#{$1}_count_for", $2.classify.constantize, *args)
+                send("#{$1}_count_for", $2.classify.constantize, *args, &block)
               rescue NameError
                 super
               end
             elsif method.to_s =~ /\A((?:dis)?liked|hidden|bookmarked)_(.+)_ids\z/
               begin
-                send("#{$1}_ids_for", $2.classify.constantize, *args)
+                send("#{$1}_ids_for", $2.classify.constantize, *args, &block)
               rescue NameError
                 super
               end
             elsif method.to_s =~ /\A((?:dis)?liked|hidden|bookmarked|recommended)_(.+)\z/
               begin
-                send("#{$1}_for", $2.classify.constantize, *args)
+                send("#{$1}_for", $2.classify.constantize, *args, &block)
               rescue NameError
                 super
               end

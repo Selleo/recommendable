@@ -25,7 +25,9 @@ module Recommendable
         ids = Recommendable.redis.zrevrange(recommended_set, offset, count - 1, :with_scores => true)
         ids = ids.select { |id, score| score > 0 }.map { |pair| pair.first }
 
-        Recommendable.query(klass, ids).sort_by { |record| ids.index(record.id.to_s) }
+        scoped = Recommendable.query(klass, ids)
+        scoped = yield(scoped) if block_given?
+        scoped.sort_by { |record| ids.index(record.id.to_s) }
       end
 
       # Removes an item from a user's set of recommendations
