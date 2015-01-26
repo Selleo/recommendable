@@ -45,7 +45,7 @@ module Recommendable
           #
           # @param [Fixnum] count the number of items to fetch (defaults to 1)
           # @return [Array] the top items belonging to this class, sorted by score
-          def self.top(options = {})
+          def self.top(options = {}, &block)
             if options.is_a?(Integer)
               options = { :count => options}
               warn "[DEPRECATION] Recommenable::Ratable.top now takes an options hash. Please call `.top(count: #{options[:count]})` instead of just `.top(#{options[:count]})`"
@@ -54,7 +54,9 @@ module Recommendable
             score_set = Recommendable::Helpers::RedisKeyMapper.score_set_for(self)
             ids = Recommendable.redis.zrevrange(score_set, options[:offset], options[:offset] + options[:count] - 1)
 
-            Recommendable.query(self, ids).sort_by { |item| ids.index(item.id.to_s) }
+            scoped = Recommendable.query(self, ids)
+            scoped = yield(scoped) if block_given?
+            scoped.sort_by { |item| ids.index(item.id.to_s) }
           end
 
           # Returns the class that has been explicitly been made ratable, whether it is this
