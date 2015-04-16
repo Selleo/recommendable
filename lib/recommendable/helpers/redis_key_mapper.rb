@@ -24,11 +24,23 @@ module Recommendable
           [redis_namespace, ratable_namespace(klass), 'scores'].join(':')
         end
 
+        def score_set_for_scope(scope)
+          union_key = [redis_namespace, "scope:#{scope}", 'scores'].join(':')
+          build_union_for(scope, union_key)
+
+          union_key
+        end
+
         def temp_set_for(klass, id)
           [redis_namespace, ratable_namespace(klass), id, 'temp'].compact.join(':')
         end
 
         private
+
+        def build_union_for(scope, union_key)
+          keys = Recommendable.redis.keys([redis_namespace, "#{scope}/*", 'scores'].join(':'))
+          Recommendable.redis.zunionstore(union_key, keys)
+        end
 
         def redis_namespace
           Recommendable.config.redis_namespace
