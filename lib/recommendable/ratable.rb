@@ -51,7 +51,13 @@ module Recommendable
               warn "[DEPRECATION] Recommenable::Ratable.top now takes an options hash. Please call `.top(count: #{options[:count]})` instead of just `.top(#{options[:count]})`"
             end
             options.reverse_merge!(:count => 1, :offset => 0)
-            score_set = Recommendable::Helpers::RedisKeyMapper.score_set_for(self)
+
+            if options[:sti]
+              score_set = Recommendable::Helpers::RedisKeyMapper.score_set_for_scope(self.to_s.downcase)
+            else
+              score_set = Recommendable::Helpers::RedisKeyMapper.score_set_for(self)
+            end
+
             ids = Recommendable.redis.zrevrange(score_set, options[:offset], options[:offset] + options[:count] - 1)
 
             scoped = Recommendable.query(self, ids)
