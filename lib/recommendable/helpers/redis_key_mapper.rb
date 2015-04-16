@@ -39,7 +39,7 @@ module Recommendable
 
         def build_union_for(scope, union_key)
           keys = Recommendable.redis.keys([redis_namespace, "#{scope}/*", 'scores'].join(':'))
-          Recommendable.redis.zunionstore(union_key, keys)
+          Recommendable.redis.zunionstore(union_key, keys) unless keys.empty?
         end
 
         def redis_namespace
